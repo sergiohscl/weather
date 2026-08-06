@@ -30,7 +30,6 @@ services:
         "--port",
         "8000"
       ]
-
 volumes:
   sqlite_data:
   uploads_data:
