@@ -1,0 +1,80 @@
+[project]
+name = "weather"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "sergiohscl",email = "sergiohscl2@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.13,<4.0"
+dependencies = [
+    "fastapi[standard] (>=0.141.1,<0.142.0)",
+    "pydantic (>=2.13.4,<3.0.0)",
+    "sqlalchemy[asyncio] (>=2.0.51,<3.0.0)",
+    "aiosqlite (>=0.22.1,<0.23.0)",
+    "pydantic-settings (>=2.14.2,<3.0.0)",
+    "alembic (>=1.19.0,<2.0.0)",
+    "pyjwt (>=2.13.0,<3.0.0)",
+    "pwdlib (>=0.3.0,<0.4.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[dependency-groups]
+dev = [
+    "ruff (>=0.16.1,<0.17.0)",
+    "taskipy (>=1.14.1,<2.0.0)"
+]
+
+[tool.ruff]
+line-length = 79
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".gitignore",
+    ".git-rewrite",
+    ".hg",
+    ".ipynb_checkpoints",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pyenv",
+    ".pytest_cache",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    ".vscode",
+    "__pypackages__",
+    "__pycache__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "site-packages",
+    "venv",
+    "alembic",
+    "migrations",
+]
+
+[tool.ruff.lint]
+preview = true
+select = ['I', 'F', 'E', 'W', 'PL', 'PT']
+ignore = ['PLR2004', 'PLR0917', 'PLR0913']
+
+[tool.ruff.format]
+preview = true
+quote-style = 'single'
+
+[tool.taskipy.tasks]
+lint = 'ruff check'
+pre_format = 'ruff check --fix'
+format = 'ruff format'
+run = 'fastapi dev weather/app.py'
