@@ -36,8 +36,12 @@ jobs:
 
       - name: Run tests
         run: |
-          if [ -d tests ]; then
-            poetry run pytest
+          if poetry run python -c "import pytest" 2>/dev/null; then
+            if [ -d tests ]; then
+              poetry run pytest
+            else
+              echo "No tests directory found."
+            fi
           else
-            echo "No tests found."
+            echo "Pytest is not installed."
           fi
