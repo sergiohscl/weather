@@ -13,7 +13,7 @@ def validate_password(password: str) -> None:
 
     normalized_password = password.lower()
     for start in range(len(normalized_password) - SEQUENCE_LENGTH + 1):
-        sequence = normalized_password[start: start + SEQUENCE_LENGTH]
+        sequence = normalized_password[start : start + SEQUENCE_LENGTH]
         if _is_consecutive_sequence(sequence):
             raise ValueError(
                 'A senha não pode conter sequências como 123, abc ou cba.'

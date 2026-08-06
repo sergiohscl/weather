@@ -5,11 +5,10 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from weather.core.accounts.security import verify_password
-
 from weather.core.authenticate.services import (
     create_token_pair,
     get_active_refresh_token,
-    invalid_credentials_exception
+    invalid_credentials_exception,
 )
 from weather.core.database import get_session
 from weather.models.accounts import Account
