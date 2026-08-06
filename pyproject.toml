@@ -15,7 +15,7 @@ dependencies = [
     "pydantic-settings (>=2.14.2,<3.0.0)",
     "alembic (>=1.19.0,<2.0.0)",
     "pyjwt (>=2.13.0,<3.0.0)",
-    "pwdlib (>=0.3.0,<0.4.0)"
+    "pwdlib[argon2] (>=0.3.0,<0.4.0)"
 ]
 
 
