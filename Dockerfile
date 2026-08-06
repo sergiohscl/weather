@@ -3,12 +3,14 @@ FROM python:3.13-slim
 ARG APPNAME=weather
 
 ENV PATH="/home/${APPNAME}/.local/bin:${PATH}" \
-    POETRY_VERSION=2.1.4 \
+    POETRY_VERSION=2.4.1 \
     POETRY_VIRTUALENVS_IN_PROJECT=true \
     POETRY_NO_INTERACTION=1
 
-RUN apk add --no-cache curl && \
-    adduser -s /bin/sh -D ${APPNAME}
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends curl && \
+    useradd -m -s /bin/bash ${APPNAME} && \
+    rm -rf /var/lib/apt/lists/*
 
 USER ${APPNAME}
 
@@ -16,14 +18,13 @@ WORKDIR /home/${APPNAME}
 
 RUN curl -sSL https://install.python-poetry.org | python3 - --version ${POETRY_VERSION}
 
-COPY pyproject.toml poetry.lock ./
-
-RUN pip install poetry==2.4.1
+COPY --chown=${APPNAME}:${APPNAME} pyproject.toml poetry.lock ./
 
 RUN poetry install \
     --no-root \
     --no-ansi \
     --without dev
-COPY . .
+
+COPY --chown=${APPNAME}:${APPNAME} . .
 
 CMD ["poetry", "run", "uvicorn", "weather.app:app", "--host", "0.0.0.0", "--port", "8000"]
