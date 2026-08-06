@@ -2,9 +2,9 @@ version: "3.8"
 
 services:
   app:
-    build: .
-    image: weather:latest
+    image: sergiohscl/weather-api:latest
     container_name: weather-app
+    restart: unless-stopped
 
     ports:
       - "8000:8000"
