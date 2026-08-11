@@ -52,9 +52,7 @@ services:
 
     command:
       [
-        "poetry",
-        "run",
-        "celery",
+        "/home/weather/.venv/bin/celery",
         "-A",
         "weather.tasks.weather.celery_app:celery_app",
         "worker",
