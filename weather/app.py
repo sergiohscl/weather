@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from weather.core.accounts.storage import UPLOADS_DIRECTORY
-from weather.routers import accounts, authenticate
+from weather.routers import accounts, authenticate, weather
 
 app = FastAPI()
 
@@ -31,6 +31,11 @@ app.include_router(
     router=authenticate.router,
     prefix='/api/v1/authenticate',
     tags=['authenticate'],
+)
+app.include_router(
+    router=weather.router,
+    prefix='/api/v1/weather-city',
+    tags=['weather'],
 )
 
 

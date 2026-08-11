@@ -14,8 +14,11 @@ services:
       - .env
 
     volumes:
-      - sqlite_data:/home/weather/data
+      - sqlite_data:/home/weather
       - uploads_data:/home/weather/uploads
+
+    depends_on:
+      - rabbitmq
 
     command:
       [
@@ -28,6 +31,44 @@ services:
         "--port",
         "8000"
       ]
+
+  celery_worker:
+    image: sergiohscl/weather-api:latest
+    container_name: weather-celery-worker
+    restart: unless-stopped
+
+    environment:
+      PYTHONUNBUFFERED: "1"
+
+    env_file:
+      - .env
+
+    volumes:
+      - sqlite_data:/home/weather
+      - uploads_data:/home/weather/uploads
+
+    depends_on:
+      - rabbitmq
+
+    command:
+      [
+        "poetry",
+        "run",
+        "celery",
+        "-A",
+        "weather.tasks.weather.celery_app:celery_app",
+        "worker",
+        "--loglevel=info"
+      ]
+
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: weather-rabbitmq
+    restart: unless-stopped
+
+    ports:
+      - "5672:5672"
+      - "15672:15672"
 
 volumes:
   sqlite_data:

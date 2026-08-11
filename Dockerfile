@@ -16,9 +16,12 @@ USER ${APPNAME}
 
 WORKDIR /home/${APPNAME}
 
-RUN mkdir -p /home/${APPNAME}/data /home/${APPNAME}/uploads
+RUN mkdir -p \
+    /home/${APPNAME}/data \
+    /home/${APPNAME}/uploads
 
-RUN curl -sSL https://install.python-poetry.org | python3 - --version ${POETRY_VERSION}
+RUN curl -sSL https://install.python-poetry.org | \
+    python3 - --version ${POETRY_VERSION}
 
 COPY --chown=${APPNAME}:${APPNAME} pyproject.toml poetry.lock ./
 
