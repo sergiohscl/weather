@@ -14,7 +14,7 @@ services:
       - .env
 
     volumes:
-      - sqlite_data:/home/weather
+      - sqlite_data:/home/weather/data
       - uploads_data:/home/weather/uploads
 
     depends_on:
@@ -44,7 +44,7 @@ services:
       - .env
 
     volumes:
-      - sqlite_data:/home/weather
+      - sqlite_data:/home/weather/data
       - uploads_data:/home/weather/uploads
 
     depends_on:
