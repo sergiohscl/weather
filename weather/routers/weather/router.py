@@ -82,10 +82,10 @@ async def generate_insight(
     path='/insights',
     response_model=list[WeatherInsightResponse],
     status_code=status.HTTP_200_OK,
-    summary="Listar insights climáticos",
+    summary='Listar insights climáticos',
     description=(
-        "Retorna os insights climáticos gerados pela IA, "
-        "ordenados do mais recente para o mais antigo."
+        'Retorna os insights climáticos gerados pela IA, '
+        'ordenados do mais recente para o mais antigo.'
     ),
 )
 async def get_weather_insights(

@@ -87,9 +87,7 @@ class WeatherService:
 
     async def get_weather_insights(self) -> list[WeatherInsight]:
         result = await self.session.scalars(
-            select(WeatherInsight).order_by(
-                WeatherInsight.generated_at.desc()
-            )
+            select(WeatherInsight).order_by(WeatherInsight.generated_at.desc())
         )
 
         return list(result.all())
