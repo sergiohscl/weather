@@ -1,4 +1,5 @@
-from datetime import datetime, timedelta
+import unicodedata
+from datetime import datetime, timedelta, timezone
 
 from openai import AsyncOpenAI
 from sqlalchemy import select
@@ -52,37 +53,59 @@ class InsightService:
         city: str | None = None,
     ) -> list[WeatherLog]:
 
-        # ---------------------------------------------------------
-        # SQLite está armazenando os timestamps sem timezone.
-        # Por isso trabalhamos aqui com datetime naive.
-        # ---------------------------------------------------------
-
-        since = datetime.utcnow() - timedelta(hours=hours)
+        since = datetime.now(timezone.utc) - timedelta(hours=hours)
 
         query = select(WeatherLog).where(WeatherLog.timestamp >= since)
-
-        # ---------------------------------------------------------
-        # Filtro da cidade
-        #
-        # Antes:
-        #     ilike(city)
-        #
-        # Agora:
-        #     ilike("%cidade%")
-        #
-        # Isso também deixa a busca mais flexível.
-        # ---------------------------------------------------------
-
-        if city and city.strip():
-            city_filter = city.strip()
-
-            query = query.where(WeatherLog.city.ilike(f'%{city_filter}%'))
 
         query = query.order_by(WeatherLog.timestamp.desc())
 
         result = await self.session.execute(query)
 
-        return list(result.scalars().all())
+        logs = list(result.scalars().all())
+
+        # ---------------------------------------------------------
+        # Filtro por cidade
+        # ---------------------------------------------------------
+
+        if city and city.strip():
+            normalized_city = self._normalize_city(city)
+
+            logs = [
+                log
+                for log in logs
+                if self._normalize_city(log.city) == normalized_city
+            ]
+
+        return logs
+
+    @staticmethod
+    def _normalize_city(city: str) -> str:
+        """
+        Normaliza o nome da cidade para permitir comparações
+        ignorando maiúsculas/minúsculas e acentos.
+
+        Exemplos:
+
+        Brasília -> brasilia
+        Brasilia -> brasilia
+        BRASÍLIA -> brasilia
+        são paulo -> sao paulo
+        São Paulo -> sao paulo
+        """
+
+        normalized = unicodedata.normalize(
+            'NFKD',
+            city,
+        )
+
+        return (
+            ''
+            .join(
+                char for char in normalized if not unicodedata.combining(char)
+            )
+            .lower()
+            .strip()
+        )
 
     @staticmethod
     def _generate_rule_based_insight(
@@ -132,7 +155,7 @@ class InsightService:
         ]
 
         # ---------------------------------------------------------
-        # Proteção caso algum campo esteja vazio
+        # Proteção caso não exista temperatura
         # ---------------------------------------------------------
 
         if not temperatures:
@@ -148,19 +171,21 @@ class InsightService:
 
         max_temperature = max(temperatures)
         min_temperature = min(temperatures)
+
         avg_temperature = sum(temperatures) / len(temperatures)
 
         avg_humidity = sum(humidities) / len(humidities) if humidities else 0
 
         avg_wind = sum(wind_speeds) / len(wind_speeds) if wind_speeds else 0
 
-        # Como a query está DESC, o primeiro é o mais recente.
+        # Como os logs estão ordenados DESC,
+        # o primeiro é o mais recente.
         last = logs[0]
 
         city_reference = city or last.city
 
         # ---------------------------------------------------------
-        # Detecta tendência simples de temperatura
+        # Tendência de temperatura
         # ---------------------------------------------------------
 
         temperature_trend = 'estável'
@@ -210,12 +235,30 @@ class InsightService:
         lines = []
 
         for weather in recent_logs:
+            temperature = (
+                f'{weather.temperature:.1f}°C'
+                if weather.temperature is not None
+                else 'N/A'
+            )
+
+            humidity = (
+                f'{weather.humidity:.0f}%'
+                if weather.humidity is not None
+                else 'N/A'
+            )
+
+            wind = (
+                f'{weather.wind_speed:.1f} m/s'
+                if weather.wind_speed is not None
+                else 'N/A'
+            )
+
             lines.append(
                 f'- {weather.timestamp:%d/%m %H:%M} | '
                 f'{weather.city} | '
-                f'{weather.temperature:.1f}°C | '
-                f'{weather.humidity:.0f}% umidade | '
-                f'{weather.wind_speed:.1f} m/s vento | '
+                f'{temperature} | '
+                f'{humidity} umidade | '
+                f'{wind} vento | '
                 f'{weather.condition}'
             )
 
