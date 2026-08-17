@@ -83,16 +83,7 @@ class InsightService:
         """
         Normaliza o nome da cidade para permitir comparações
         ignorando maiúsculas/minúsculas e acentos.
-
-        Exemplos:
-
-        Brasília -> brasilia
-        Brasilia -> brasilia
-        BRASÍLIA -> brasilia
-        são paulo -> sao paulo
-        São Paulo -> sao paulo
         """
-
         normalized = unicodedata.normalize(
             'NFKD',
             city,

@@ -5,7 +5,7 @@ from io import BytesIO, StringIO
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.responses import StreamingResponse
 from openpyxl import Workbook
-from sqlalchemy import func, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from weather.core.database import get_session
@@ -23,6 +23,7 @@ from weather.schemas.weather.weather_log import (
     WeatherLogSortOrder,
 )
 from weather.schemas.weather.weather_task import WeatherTaskResponseSchema
+from weather.services.weather.insight_service import InsightService
 from weather.services.weather.weather_service import WeatherService
 from weather.tasks.weather.weather_tasks import (
     collect_current_weather,
@@ -150,10 +151,6 @@ async def list_weather(
 ):
     query = select(WeatherLog)
 
-    # Filtro por cidade
-    if city:
-        query = query.where(WeatherLog.city.ilike(f'%{city}%'))
-
     # Filtro por temperatura mínima
     if temperature_min is not None:
         query = query.where(WeatherLog.temperature >= temperature_min)
@@ -174,12 +171,6 @@ async def list_weather(
     if condition:
         query = query.where(WeatherLog.condition.ilike(f'%{condition}%'))
 
-    # Total de registros após os filtros
-    count_query = select(func.count()).select_from(query.subquery())
-
-    total_result = await db.scalar(count_query)
-    total = total_result or 0
-
     # Ordenação
     sort_column = getattr(WeatherLog, sort_by)
 
@@ -188,19 +179,35 @@ async def list_weather(
     else:
         query = query.order_by(sort_column.asc())
 
-    # Paginação
-    offset = (page - 1) * page_size
-
-    query = query.offset(offset).limit(page_size)
-
+    # Busca os registros antes da paginação,
+    # pois o filtro de cidade será normalizado em Python.
     result = await db.scalars(query)
 
     weather_logs = result.all()
 
-    total_pages = (total + page_size - 1) // page_size
+    # Filtro por cidade ignorando acentos e maiúsculas/minúsculas
+    if city:
+        normalized_city = InsightService._normalize_city(city)
+
+        weather_logs = [
+            weather_log
+            for weather_log in weather_logs
+            if normalized_city
+            in InsightService._normalize_city(weather_log.city)
+        ]
+
+    # Total após todos os filtros
+    total = len(weather_logs)
+
+    # Paginação
+    offset = (page - 1) * page_size
+
+    paginated_weather_logs = weather_logs[offset : offset + page_size]
+
+    total_pages = (total + page_size - 1) // page_size if total else 0
 
     return {
-        'items': weather_logs,
+        'items': paginated_weather_logs,
         'total': total,
         'page': page,
         'page_size': page_size,
