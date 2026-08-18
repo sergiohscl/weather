@@ -51,17 +51,25 @@ class WeatherService:
     ) -> list[WeatherLog]:
         query = select(WeatherLog)
 
-        if city and city.strip():
-            query = query.where(WeatherLog.city.ilike(f'%{city.strip()}%'))
-
         if order == 'asc':
             query = query.order_by(WeatherLog.timestamp.asc())
         else:
             query = query.order_by(WeatherLog.timestamp.desc())
 
         result = await self.session.scalars(query)
+        weather_logs = list(result.all())
 
-        return list(result.all())
+        if city and city.strip():
+            normalized_city = InsightService._normalize_city(city)
+
+            weather_logs = [
+                weather_log
+                for weather_log in weather_logs
+                if normalized_city
+                in InsightService._normalize_city(weather_log.city)
+            ]
+
+        return weather_logs
 
     async def get_weather_log_by_id(
         self,

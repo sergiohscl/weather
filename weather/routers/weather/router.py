@@ -202,7 +202,7 @@ async def list_weather(
     # Paginação
     offset = (page - 1) * page_size
 
-    paginated_weather_logs = weather_logs[offset : offset + page_size]
+    paginated_weather_logs = weather_logs[offset: offset + page_size]
 
     total_pages = (total + page_size - 1) // page_size if total else 0
 
