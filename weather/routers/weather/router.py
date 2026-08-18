@@ -216,49 +216,6 @@ async def list_weather(
 
 
 @router.get(
-    path='/{weather_id}',
-    response_model=WeatherLogResponse,
-    status_code=status.HTTP_200_OK,
-    summary='Buscar coleta de clima por ID',
-)
-async def get_weather_by_id(
-    weather_id: int,
-    db: AsyncSession = Depends(get_session),
-):
-    service = WeatherService(db)
-
-    weather_log = await service.get_weather_log_by_id(weather_id)
-
-    if weather_log is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail='Coleta de clima não encontrada.',
-        )
-
-    return weather_log
-
-
-@router.delete(
-    path='/{weather_id}',
-    status_code=status.HTTP_204_NO_CONTENT,
-    summary='Excluir coleta de clima por ID',
-)
-async def delete_weather_by_id(
-    weather_id: int,
-    db: AsyncSession = Depends(get_session),
-):
-    service = WeatherService(db)
-
-    deleted = await service.delete_weather_log(weather_id)
-
-    if not deleted:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail='Coleta de clima não encontrada.',
-        )
-
-
-@router.get(
     path='/export-csv',
     summary='Exportar coletas de clima em CSV',
 )
@@ -390,3 +347,46 @@ async def export_xlsx(
             'Content-Disposition': ('attachment; filename="weather_logs.xlsx"')
         },
     )
+
+
+@router.get(
+    path='/{weather_id}',
+    response_model=WeatherLogResponse,
+    status_code=status.HTTP_200_OK,
+    summary='Buscar coleta de clima por ID',
+)
+async def get_weather_by_id(
+    weather_id: int,
+    db: AsyncSession = Depends(get_session),
+):
+    service = WeatherService(db)
+
+    weather_log = await service.get_weather_log_by_id(weather_id)
+
+    if weather_log is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail='Coleta de clima não encontrada.',
+        )
+
+    return weather_log
+
+
+@router.delete(
+    path='/{weather_id}',
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary='Excluir coleta de clima por ID',
+)
+async def delete_weather_by_id(
+    weather_id: int,
+    db: AsyncSession = Depends(get_session),
+):
+    service = WeatherService(db)
+
+    deleted = await service.delete_weather_log(weather_id)
+
+    if not deleted:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail='Coleta de clima não encontrada.',
+        )
