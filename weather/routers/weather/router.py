@@ -7,7 +7,7 @@ from fastapi.responses import StreamingResponse
 from openpyxl import Workbook
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-
+from celery.result import AsyncResult
 from weather.core.database import get_session
 from weather.models.weather.weather_log import WeatherLog
 from weather.schemas.weather.weather_city import WeatherCitySchema
@@ -16,13 +16,16 @@ from weather.schemas.weather.weather_insight import (
     WeatherInsightResponse,
     WeatherInsightTaskResponse,
 )
+from weather.schemas.weather.weather_task import (
+    WeatherInsightTaskStatusResponse,
+    WeatherTaskResponseSchema,
+)
 from weather.schemas.weather.weather_log import (
     WeatherLogListResponse,
     WeatherLogResponse,
     WeatherLogSortField,
     WeatherLogSortOrder,
 )
-from weather.schemas.weather.weather_task import WeatherTaskResponseSchema
 from weather.services.weather.insight_service import InsightService
 from weather.services.weather.weather_service import WeatherService
 from weather.tasks.weather.weather_tasks import (
@@ -76,6 +79,33 @@ async def generate_insight(
         task_id=task.id,
         hours=data.hours,
         city=data.city,
+    )
+
+
+@router.get(
+    path='/insight-task/{task_id}',
+    response_model=WeatherInsightTaskStatusResponse,
+    status_code=status.HTTP_200_OK,
+    summary='Consultar status da geração do insight',
+)
+async def get_insight_task_status(
+    task_id: str,
+) -> WeatherInsightTaskStatusResponse:
+
+    task = AsyncResult(
+        task_id,
+        app=generate_weather_insight.app,
+    )
+
+    result = None
+
+    if task.successful():
+        result = str(task.result)
+
+    return WeatherInsightTaskStatusResponse(
+        task_id=task_id,
+        status=task.status,
+        result=result,
     )
 
 
