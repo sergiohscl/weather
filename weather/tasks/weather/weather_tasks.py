@@ -52,6 +52,7 @@ async def _generate_weather_insight(
         )
 
         weather_insight = WeatherInsight(
+            city=city or '',
             text=insight_text,
         )
 
@@ -67,6 +68,7 @@ async def _generate_weather_insight(
 
         return {
             'id': weather_insight.id,
+            'city': weather_insight.city,
             'generated_at': weather_insight.generated_at,
             'text': weather_insight.text,
         }

@@ -9,6 +9,7 @@ class WeatherInsightCreate(BaseModel):
 
 class WeatherInsightResponse(BaseModel):
     id: int
+    city: str | None
     generated_at: datetime
     text: str
 
@@ -66,4 +67,19 @@ class WeatherInsightTaskResponse(BaseModel):
     city: str | None = Field(
         default=None,
         description='Cidade utilizada na análise.',
+    )
+
+
+class WeatherInsightTaskStatusResponse(BaseModel):
+    task_id: str = Field(
+        description='ID da tarefa Celery.',
+    )
+
+    status: str = Field(
+        description='Status atual da tarefa Celery.',
+    )
+
+    result: dict | None = Field(
+        default=None,
+        description='Resultado da geração do insight quando a tarefa for concluída.',  # noqa
     )

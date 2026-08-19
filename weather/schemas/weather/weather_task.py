@@ -9,4 +9,4 @@ class WeatherTaskResponseSchema(BaseModel):
 class WeatherInsightTaskStatusResponse(BaseModel):
     task_id: str
     status: str
-    result: str | None = None
+    result: dict | None = None

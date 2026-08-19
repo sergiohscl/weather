@@ -33,6 +33,7 @@ class Settings(BaseSettings):
 
     # Celery / RabbitMQ
     CELERY_BROKER_URL: str = 'amqp://guest:guest@rabbitmq:5672//'
+    CELERY_RESULT_BACKEND: str = 'redis://redis:6379/0'
 
     model_config = SettingsConfigDict(
         env_file='.env',

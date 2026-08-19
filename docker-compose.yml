@@ -11,7 +11,7 @@ services:
       PYTHONUNBUFFERED: "1"
 
     env_file:
-      - .env
+      - ${ENV_FILE:-.env}
 
     volumes:
       - sqlite_data:/home/weather/data
@@ -19,6 +19,7 @@ services:
 
     depends_on:
       - rabbitmq
+      - redis
 
     command:
       [
@@ -41,7 +42,7 @@ services:
       PYTHONUNBUFFERED: "1"
 
     env_file:
-      - .env
+      - ${ENV_FILE:-.env}
 
     volumes:
       - sqlite_data:/home/weather/data
@@ -49,6 +50,7 @@ services:
 
     depends_on:
       - rabbitmq
+      - redis
 
     command:
       [
@@ -68,6 +70,12 @@ services:
       - "5672:5672"
       - "15672:15672"
 
+  redis:
+    image: redis:7-alpine
+    container_name: weather-redis
+    restart: unless-stopped
+
 volumes:
   sqlite_data:
   uploads_data:
+  redis_data:

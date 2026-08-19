@@ -5,6 +5,7 @@ from weather.core.settings import settings
 celery_app = Celery(
     'weather',
     broker=settings.CELERY_BROKER_URL,
+    backend=settings.CELERY_RESULT_BACKEND,
     include=[
         'weather.tasks.weather.weather_tasks',
     ],

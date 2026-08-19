@@ -97,23 +97,28 @@ class WeatherService:
         self,
         city: str | None = None,
     ) -> list[WeatherInsight]:
-        query = select(WeatherInsight).order_by(
-            WeatherInsight.generated_at.desc()
-        )
 
-        result = await self.session.scalars(query)
-
-        insights = list(result.all())
+        query = select(WeatherInsight)
 
         if city and city.strip():
             normalized_city = InsightService._normalize_city(city)
 
+            result = await self.session.scalars(query)
+
             insights = [
                 insight
-                for insight in insights
+                for insight in result.all()
                 if insight.city
-                and normalized_city
-                == InsightService._normalize_city(insight.city)
+                and InsightService._normalize_city(insight.city)
+                == normalized_city
             ]
+        else:
+            result = await self.session.scalars(query)
 
-        return insights
+            insights = list(result.all())
+
+        return sorted(
+            insights,
+            key=lambda insight: insight.generated_at,
+            reverse=True,
+        )

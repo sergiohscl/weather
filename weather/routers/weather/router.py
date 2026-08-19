@@ -101,7 +101,7 @@ async def get_insight_task_status(
     result = None
 
     if task.successful():
-        result = str(task.result)
+        result = task.result
 
     return WeatherInsightTaskStatusResponse(
         task_id=task_id,
