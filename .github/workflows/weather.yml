@@ -94,25 +94,54 @@ jobs:
             cd /home/ubuntu/apps/weather
 
             echo "======================================"
+            echo "Validando ambiente de produção..."
+            echo "======================================"
+
+            test -f .env.production
+
+            echo "OK: .env.production encontrado"
+
+            echo "======================================"
             echo "Atualizando código..."
             echo "======================================"
 
             git pull origin main
 
             echo "======================================"
+            echo "Validando Docker Compose..."
+            echo "======================================"
+
+            ENV_FILE=.env.production docker compose config >/dev/null
+
+            echo "OK: Docker Compose válido"
+
+            echo "======================================"
             echo "Baixando nova imagem Docker..."
             echo "======================================"
 
-            docker compose pull app
+            ENV_FILE=.env.production docker compose pull app
 
             echo "======================================"
             echo "Recriando aplicação..."
             echo "======================================"
 
-            docker compose up -d --force-recreate app
+            ENV_FILE=.env.production docker compose up -d --force-recreate app
+
+            echo "======================================"
+            echo "Executando migrations..."
+            echo "======================================"
+
+            ENV_FILE=.env.production docker compose exec -T app \
+              poetry run alembic upgrade head
+
+            echo "======================================"
+            echo "Recriando Celery Worker..."
+            echo "======================================"
+
+            ENV_FILE=.env.production docker compose up -d --force-recreate celery_worker
 
             echo "======================================"
             echo "Status dos containers..."
             echo "======================================"
 
-            docker compose ps
+            ENV_FILE=.env.production docker compose ps
