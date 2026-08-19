@@ -93,9 +93,27 @@ class WeatherService:
 
         return True
 
-    async def get_weather_insights(self) -> list[WeatherInsight]:
-        result = await self.session.scalars(
-            select(WeatherInsight).order_by(WeatherInsight.generated_at.desc())
+    async def get_weather_insights(
+        self,
+        city: str | None = None,
+    ) -> list[WeatherInsight]:
+        query = select(WeatherInsight).order_by(
+            WeatherInsight.generated_at.desc()
         )
 
-        return list(result.all())
+        result = await self.session.scalars(query)
+
+        insights = list(result.all())
+
+        if city and city.strip():
+            normalized_city = InsightService._normalize_city(city)
+
+            insights = [
+                insight
+                for insight in insights
+                if insight.city
+                and normalized_city
+                == InsightService._normalize_city(insight.city)
+            ]
+
+        return insights

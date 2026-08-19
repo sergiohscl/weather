@@ -117,15 +117,23 @@ async def get_insight_task_status(
     summary='Listar insights climáticos',
     description=(
         'Retorna os insights climáticos gerados pela IA, '
+        'podendo filtrar por cidade, '
         'ordenados do mais recente para o mais antigo.'
     ),
 )
 async def get_weather_insights(
+    city: str | None = Query(
+        default=None,
+        description='Filtra pelo nome da cidade',
+    ),
     db: AsyncSession = Depends(get_session),
 ) -> list[WeatherInsightResponse]:
+
     service = WeatherService(db)
 
-    return await service.get_weather_insights()
+    return await service.get_weather_insights(
+        city=city,
+    )
 
 
 @router.get(
