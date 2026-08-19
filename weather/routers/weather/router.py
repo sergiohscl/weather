@@ -2,12 +2,13 @@ import csv
 from datetime import datetime
 from io import BytesIO, StringIO
 
+from celery.result import AsyncResult
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.responses import StreamingResponse
 from openpyxl import Workbook
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from celery.result import AsyncResult
+
 from weather.core.database import get_session
 from weather.models.weather.weather_log import WeatherLog
 from weather.schemas.weather.weather_city import WeatherCitySchema
@@ -16,15 +17,15 @@ from weather.schemas.weather.weather_insight import (
     WeatherInsightResponse,
     WeatherInsightTaskResponse,
 )
-from weather.schemas.weather.weather_task import (
-    WeatherInsightTaskStatusResponse,
-    WeatherTaskResponseSchema,
-)
 from weather.schemas.weather.weather_log import (
     WeatherLogListResponse,
     WeatherLogResponse,
     WeatherLogSortField,
     WeatherLogSortOrder,
+)
+from weather.schemas.weather.weather_task import (
+    WeatherInsightTaskStatusResponse,
+    WeatherTaskResponseSchema,
 )
 from weather.services.weather.insight_service import InsightService
 from weather.services.weather.weather_service import WeatherService
@@ -232,7 +233,7 @@ async def list_weather(
     # Paginação
     offset = (page - 1) * page_size
 
-    paginated_weather_logs = weather_logs[offset: offset + page_size]
+    paginated_weather_logs = weather_logs[offset : offset + page_size]
 
     total_pages = (total + page_size - 1) // page_size if total else 0
 
