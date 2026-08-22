@@ -10,6 +10,7 @@ app = FastAPI()
 origins = [
     'http://localhost:3000',  # React
     'http://localhost:4200',  # Angular
+    "https://weatherui.duckdns.org",  # Servidor Oracle
     'http://127.0.0.1:5500',  # Live Server VSCode
 ]
 
